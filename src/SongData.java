@@ -25,13 +25,15 @@ public class SongData {
 
     //================================================================================ constructor
 
+    //constructor notesList receives a list of 8 binary [on/off] states to play for each note.
     public SongData(int[] notesList){
         this(notesList, 200);
     }
     public SongData(int[] noteList, int tempo)  {
         //_maxRows = rows;  //8 rows per whole note
-        this.tempo = 200; 
         this.tempo = tempo;
+
+        // TODO: append the notesList to this new 2d array
         _grid = new int[_maxRows][_maxCols];
         clear();
 
@@ -48,7 +50,7 @@ public class SongData {
         EIGHTH = this.tempo /8;
     }
 
-    //================================================================================ reset
+    //================================================================================ clear
     /** Clears board to initial state. **/
     public void clear() {
         for (int r = 0; r < _maxRows; r++) {
@@ -56,7 +58,6 @@ public class SongData {
                 _grid[r][c] = _REST;
             }
         }
-
     }
 
 

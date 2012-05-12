@@ -47,7 +47,11 @@ public class Sequencer {
 
         JButton stop = new JButton("Stop");
         stop.addActionListener(new StopListener());
-        buttonBox.add(start);
+        buttonBox.add(stop);
+
+        JButton reset = new JButton("Reset");
+        stop.addActionListener(new ResetListener());
+        buttonBox.add(reset);
         
         Box labels = new Box(BoxLayout.X_AXIS);
         for (int i = 0; i < 8; i++){
@@ -117,7 +121,7 @@ public class Sequencer {
 
                     //checkbox @ this beat selected
                     if (jc.isSelected()){
-                    noteList[r] = key; //put key value in this slot to trigger solenoid
+                        noteList[r] = key; //put key value in this slot to trigger solenoid
                     }
                     else{
                         noteList[r] = melody._REST; //nothing should be triggered on this beat
@@ -129,7 +133,7 @@ public class Sequencer {
             /*for all 8 beats of this note, send to method will compile and play the entire array
             needs to loop through list  and set key = index */
 
-            SongData noteBeats = new SongData(key, noteList);
+            SongData noteBeats = new SongData(noteList, key);
             //TODO: melody.Play() method
             //TODO: song looping?
 
@@ -146,6 +150,11 @@ public class Sequencer {
     public class StopListener implements ActionListener {
         public void actionPerformed(ActionEvent a) {
             //TODO melody.Stop() method
+        }
+    }
+    public class ResetListener implements ActionListener {
+        public void actionPerformed(ActionEvent a){
+            melody.clear();
         }
     }
     
