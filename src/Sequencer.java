@@ -7,20 +7,20 @@ public class Sequencer {
     
     JPanel mainPanel;
     ArrayList<JCheckBox> checkboxList; //cell storage
-    SongData melody;
+
     JFrame theFrame;
     String[] notes = {    "c", "B", "A", "G", "F", "E", "D", "C"    };
 
     //aka xylophone keys
-    int[] solenoids = {
-            melody.getc(),
-            melody.getB(),
-            melody.getA(),
-            melody.getG(),
-            melody.getF(),
-            melody.getE(),
-            melody.getD(),
-            melody.getC(),
+    int[][] noteArray = {
+            { 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 0, 0, 0 }
     };
 
 
@@ -29,7 +29,7 @@ public class Sequencer {
         new Sequencer().buildGUI();
     }
 
-    //================================================================================ boring GUI stuff
+    //================================================================================ GUI
     public void buildGUI(){
         theFrame = new JFrame("Cordialatron");
         theFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -53,7 +53,8 @@ public class Sequencer {
         buttonBox.add(reset);
         
         Box labels = new Box(BoxLayout.X_AXIS);
-        for (int i = 0; i < 8; i++){
+        for (int i = 0; i < 8; i++)
+        {
             labels.add(new Label(notes[i]));
         }
       
@@ -70,94 +71,91 @@ public class Sequencer {
         mainPanel = new JPanel(grid);
         background.add(BorderLayout.CENTER, mainPanel);
         
-        for (int i = 0; i < 128; i++){
+        for (int i = 0; i < 64; i++){
             JCheckBox c = new JCheckBox();
             c.setSelected(false);
             checkboxList.add(c);
             mainPanel.add(c);            
         }
 
-        tuneUp();
+
         theFrame.setBounds(50,50,300,300);
         theFrame.pack();
-        theFrame.setVisible(true); 
-        
+        theFrame.setVisible(true);
         
     }
 
     //================================================================================ xyloTuner
     public void xyloTuner() {
+   
 
         /*  8-element array [1 whole note] to hold values for one note, across all 8 beats.
             if the note is supposed to play on that beat, the val @ that element will
             be the key. If that note is NOT supposed to play on that beat, put a ZERO  */
-        int[] noteList = null; 
+        int[] noteROW;
         int r, c;
-        melody.clear();
 
-        //hit each note in the column
-        for (c = 0; c < 8; c++) {
-            noteList = new int[8];
+        int i = 0;
+//        boolean ON = true;
+        int[] noteON = {0,1,2,3,4,5,6,7};
 
-            //set the key for the correct note to trigger a solenoid
-            int key = solenoids[c];
+        //fill matrix with binary data from user input
+        for (r = 0; r < 8; r++)
+        {
+            for (c = 0; c < 8; c++)
+            {
+                JCheckBox jc = checkboxList.get(r + (8*c));
 
-            /* hit each beat in the given column of the note by scanning the rows :
-     
-                        D  (beat at 1/8)
-                        D  (half note beat)
-                        0
-                        0
-                        0
-                        0
-                        D  (beat at 2/8)
-                        0
-     
-                .....   D    C
-            */
-                for (r = 0; r < 8; r++) {
-                    JCheckBox jc = (JCheckBox) checkboxList.get(r + (16*c));
+                //checkbox @ this beat selected
+                if (jc.isSelected()){
+                    noteArray[r][c] = 1; //put key value in this slot to trigger solenoid
+                  }
+            }
+        }
+        int j=0;
+        while (j!=8){
 
-                    //checkbox @ this beat selected
-                    if (jc.isSelected()){
-                        noteList[r] = key; //put key value in this slot to trigger solenoid
-                    }
-                    else{
-                        noteList[r] = melody._REST; //nothing should be triggered on this beat
-                    }
-                }   //close inner loop
+            noteROW = noteArray[i];
+            //hit each note in the column
+            for (j = 0; j < noteROW.length; j++) {
 
+                if (noteROW[j]==1)
+                {
+                System.out.print(noteON[j]);
+                }
+            //delay for a bit [tempo]
+//             i=(i+1)%8;  //if i reaches 8 then goes back to 0, goes on forevearrrara
 
+            }
 
-            /*for all 8 beats of this note, compile the entire array
-           ** needs to loop through list  and set key = index */
+        }
 
-            SongData noteBeats = new SongData(noteList, key);
-            melody.makeTrack(noteList);
-
-        }   //close outer loop
 
         //TODO: melody.Play() method    — need to figure out how to set .start() actionListener
-        //TODO: song looping?
 
     }
 
+    public void clear() {
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                noteArray[r][c] = 0;
+            }
+        }
+    }
     //================================================================================ ActionListeners
-    public class StartListener implements ActionListener {
+    class StartListener implements ActionListener {
         public void actionPerformed(ActionEvent a){
             xyloTuner();
         }
     }
-    public class StopListener implements ActionListener {
+    class StopListener implements ActionListener {
         public void actionPerformed(ActionEvent a) {
             //TODO melody.Stop() method
         }
     }
-    public class ResetListener implements ActionListener {
+    class ResetListener implements ActionListener {
         public void actionPerformed(ActionEvent a){
-            melody.clear();
+           clear();
         }
     }
-    
 }
-
