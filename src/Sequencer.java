@@ -29,7 +29,6 @@ public class Sequencer {
         new Sequencer().buildGUI();
     }
 
-
     //================================================================================ boring GUI stuff
     public void buildGUI(){
         theFrame = new JFrame("Cordialatron");
@@ -130,16 +129,18 @@ public class Sequencer {
 
 
 
-            /*for all 8 beats of this note, send to method will compile and play the entire array
-            needs to loop through list  and set key = index */
+            /*for all 8 beats of this note, compile the entire array
+           ** needs to loop through list  and set key = index */
 
             SongData noteBeats = new SongData(noteList, key);
-            //TODO: melody.Play() method
-            //TODO: song looping?
+            melody.makeTrack(noteList);
 
         }   //close outer loop
-    }
 
+        //TODO: melody.Play() method    — need to figure out how to set .start() actionListener
+        //TODO: song looping?
+
+    }
 
     //================================================================================ ActionListeners
     public class StartListener implements ActionListener {

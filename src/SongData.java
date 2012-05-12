@@ -4,8 +4,8 @@ public class SongData {
     boolean play = false;
 
     //================================================================================ fields
-    private int       _maxRows;           // Number of rows. Set in constructor.
-    private final int _maxCols = 8;      // Number of columns. Only 8 notes on xylophone
+    private int       _maxRows = 8;    // Number of rows. Set in constructor.
+    private final int _maxCols = 8;   // Number of columns. Only 8 notes on xylophone
     
     //notes
     private int c;
@@ -96,6 +96,38 @@ public class SongData {
 
 
 
+
+
+    
+    int row = 0;
+    //TODO: Make sure this is in the right place
+    
+    //================================================================================ makeTrack
+    public void makeTrack(int[] notesList){
+        //makes each row a different note to compile an entire track
+        int i;
+       
+        int[][] noteGrid = new int[8][8];
+        for(i = 0; i < notesList.length; i++){
+
+        //  fill with note data for every beat
+            noteGrid[row][i] = notesList[i];   
+            row+=1;
+        }
+        rollTune(noteGrid);
+    }
+
+    //================================================================================ rollTune
+    public void rollTune(int[][] noteGrid){
+        int r,c;
+   
+        for(r = 0; r < noteGrid.length; r++){
+            for(c = 0; c < noteGrid[r].length; c++){
+                //trigger or rest solenoid at [r][c]
+            }
+        
+        }
+    }
     //================================================================================ getters&setters
     public int getF() {
         return F;
