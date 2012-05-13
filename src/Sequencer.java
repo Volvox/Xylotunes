@@ -12,16 +12,7 @@ public class Sequencer {
     String[] notes = {    "c", "B", "A", "G", "F", "E", "D", "C"    };
 
     //aka xylophone keys
-    int[][] noteArray = {
-            { 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0 }
-    };
+    int[][] noteArray = new int[8][8];
 
 
 
@@ -60,7 +51,7 @@ public class Sequencer {
       
         
         background.add(BorderLayout.EAST, buttonBox);
-        background.add(BorderLayout.WEST, labels);
+        background.add(BorderLayout.SOUTH, labels);
         
         theFrame.getContentPane().add(background);
 
@@ -96,32 +87,43 @@ public class Sequencer {
         int r, c;
 
         int i = 0;
-//        boolean ON = true;
+        boolean ON = true;
         int[] noteON = {0,1,2,3,4,5,6,7};
 
         //fill matrix with binary data from user input
-        for (r = 0; r < 8; r++)
+        for (r = 0; r < noteON.length; r++)
         {
-            for (c = 0; c < 8; c++)
+            for (c = 0; c < noteON.length; c++)
             {
-                JCheckBox jc = checkboxList.get(r + (8*c));
+                JCheckBox jc = checkboxList.get(c + (noteON.length*r));
 
                 //checkbox @ this beat selected
                 if (jc.isSelected()){
                     noteArray[r][c] = 1; //put key value in this slot to trigger solenoid
+
                   }
+                else noteArray[r][c] = 0;
+                System.out.print(noteArray[r][c]);//debug
+
             }
+            System.out.println();
+
         }
+
         int j=0;
-        while (j!=8){
 
-            noteROW = noteArray[i];
+        while (i<noteArray.length){
+
+
             //hit each note in the column
-            for (j = 0; j < noteROW.length; j++) {
-
-                if (noteROW[j]==1)
+            for (j = 0; j < noteArray.length; j++) {
+                noteROW = noteArray[j];
+                for (i = 0; i < noteArray.length; i++)
                 {
-                System.out.print(noteON[j]);
+                if (noteROW[i]==1)
+                {
+                System.out.println("\n cof\n");
+                }
                 }
             //delay for a bit [tempo]
 //             i=(i+1)%8;  //if i reaches 8 then goes back to 0, goes on forevearrrara
@@ -150,7 +152,8 @@ public class Sequencer {
     }
     class StopListener implements ActionListener {
         public void actionPerformed(ActionEvent a) {
-            //TODO melody.Stop() method
+
+            //TODO Stop() method
         }
     }
     class ResetListener implements ActionListener {
