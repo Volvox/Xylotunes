@@ -11,7 +11,7 @@ public class Sequencer {
     JFrame theFrame;
     String[] notes = {    "c", "B", "A", "G", "F", "E", "D", "C"    };
 
-    //aka xylophone keys
+
     int[][] noteArray = new int[8][8];
 
 
@@ -122,7 +122,7 @@ public class Sequencer {
                 {
                 if (noteROW[i]==1)
                 {
-                System.out.println("\n cof\n");
+                System.out.println(noteON[i]);
                 }
                 }
             //delay for a bit [tempo]
