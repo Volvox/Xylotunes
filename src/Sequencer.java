@@ -80,9 +80,9 @@ public class Sequencer {
     public void xyloTuner() {
    
 
-        /*  8-element array [1 whole note] to hold values for one note, across all 8 beats.
-            if the note is supposed to play on that beat, the val @ that element will
-            be the key. If that note is NOT supposed to play on that beat, put a ZERO  */
+        /*  8-element array to hold values for one note, across all 8 beats.
+            if the note is supposed to play on that beat, the element value
+            will be a 1. If that note is NOT supposed to play on that beat, a zero.*/
         int[] noteROW;
         int r, c;
 
@@ -90,7 +90,7 @@ public class Sequencer {
         boolean ON = true;
         int[] noteON = {0,1,2,3,4,5,6,7};
 
-        //fill matrix with binary data from user input
+        //fill matrix with binary data from checkbox grid
         for (r = 0; r < noteON.length; r++)
         {
             for (c = 0; c < noteON.length; c++)
@@ -99,15 +99,13 @@ public class Sequencer {
 
                 //checkbox @ this beat selected
                 if (jc.isSelected()){
-                    noteArray[r][c] = 1; //put key value in this slot to trigger solenoid
+                    noteArray[r][c] = 1; //put binary value in this slot to trigger solenoid
 
                   }
                 else noteArray[r][c] = 0;
                 System.out.print(noteArray[r][c]);//debug
-
             }
             System.out.println();
-
         }
 
         int j=0;
@@ -129,7 +127,6 @@ public class Sequencer {
 //             i=(i+1)%8;  //if i reaches 8 then goes back to 0, goes on forevearrrara
 
             }
-
         }
 
 
