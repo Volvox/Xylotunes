@@ -1,6 +1,4 @@
 import gnu.io.SerialPort;
-import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,8 +11,10 @@ import java.util.ArrayList;
 
 
 
-public class Sequencer extends JPanel implements SerialPortEventListener{
+public class Sequencer extends Thread implements Runnable{
     SerialPort serialPort;
+    static
+    volatile boolean stopFlag = true;
     private static final String PORT_NAMES[] = {
             "/dev/tty.usbmodemfd121", // Mac OS X
 
@@ -42,8 +42,120 @@ public class Sequencer extends JPanel implements SerialPortEventListener{
      JFrame theFrame;
     String[] notes = {    "c", "B", "A", "G", "F", "E", "D", "C"    };
 
+    int count = 0;
+
+
 
     int[][] noteArray = new int[8][8];
+
+
+
+
+    @Override
+    public void run() {
+        while (!stopFlag){
+             count++;
+            /*  8-element array to hold values for one note, across all 8 beats.
+if the note is supposed to play on that beat, the element value
+will be a 1. If that note is NOT supposed to play on that beat, a zero.*/
+            int[] noteROW;
+            int r, c;
+
+            int i = 0;
+            //        boolean ON = true;
+            int[] noteON = {0,1,2,3,4,5,6,7};
+
+            //fill matrix with binary data from checkbox grid
+            for (r = 0; r < noteON.length; r++)
+            {
+                for (c = 0; c < noteON.length; c++)
+                {
+                    JCheckBox jc = checkboxList.get(c + (noteON.length*r));
+
+                    //checkbox @ this beat selected
+                    if (jc.isSelected()){
+                        noteArray[r][c] = 1; //put binary value in this slot to trigger solenoid
+
+                    }
+                    else noteArray[r][c] = 0;
+                    System.out.print(noteArray[r][c]);//debug
+                }
+                System.out.println();
+            }
+
+            int j;
+            try{
+                while (!stopFlag){
+
+                    //hit each note in the column
+                    for (j = 0; j < noteArray.length; j++) {
+                        noteROW = noteArray[j];
+                        for (i = 0; i < noteArray.length; i++)
+                        {
+                            if (noteROW[i]==1)
+                            {
+                                System.out.println(noteON[i]);
+                            }
+                        }
+                        //delay for a bit [tempo]
+                        i=(i+1)%8;  //if i reaches 8 then goes back to 0, goes on forevearrrara
+                        if(ON){
+                            try {
+                                Thread.sleep(1500);
+                            } catch (InterruptedException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+
+            }catch (Exception e){
+
+            }
+            }
+
+    }
+
+
+
+    //================================================================================ ActionListeners
+    class StartListener implements ActionListener {
+        public void actionPerformed(ActionEvent a){
+            run();
+        }
+    }
+    class StopListener implements ActionListener {
+        public void actionPerformed(ActionEvent a) {
+            stopFlag = false;
+
+        }
+    }
+    class ResetListener implements ActionListener {
+        public void actionPerformed(ActionEvent a){
+            //clear();
+        }
+    }
+
+    private class XylophoneTrigger extends Thread {
+        // The code represents the note name
+        private char code;
+
+        public XylophoneTrigger(char code) {
+            this.code = code;
+        }
+
+
+
+//        @Override
+//        public void run() {
+//            //synchronized (lock)
+//        }
+
+    }
+
+
+
 
 
 
@@ -52,7 +164,7 @@ public class Sequencer extends JPanel implements SerialPortEventListener{
             public void run() {
                 Sequencer seq = new Sequencer();
                 seq.buildGUI();
-                new Sequencer().setVisible(true);
+
             }
         });
     }
@@ -115,115 +227,13 @@ public class Sequencer extends JPanel implements SerialPortEventListener{
     }
 
     //================================================================================ xyloTuner
-    public void xyloTuner() {
-   
 
-        /*  8-element array to hold values for one note, across all 8 beats.
-            if the note is supposed to play on that beat, the element value
-            will be a 1. If that note is NOT supposed to play on that beat, a zero.*/
-        int[] noteROW;
-        int r, c;
-
-        int i = 0;
-//        boolean ON = true;
-        int[] noteON = {0,1,2,3,4,5,6,7};
-
-        //fill matrix with binary data from checkbox grid
-        for (r = 0; r < noteON.length; r++)
-        {
-            for (c = 0; c < noteON.length; c++)
-            {
-                JCheckBox jc = checkboxList.get(c + (noteON.length*r));
-
-                //checkbox @ this beat selected
-                if (jc.isSelected()){
-                    noteArray[r][c] = 1; //put binary value in this slot to trigger solenoid
-
-                  }
-                else noteArray[r][c] = 0;
-                System.out.print(noteArray[r][c]);//debug
-            }
-            System.out.println();
-        }
-
-        int j;
-        try{
-        while (ON){
-
-            //hit each note in the column
-            for (j = 0; j < noteArray.length; j++) {
-                noteROW = noteArray[j];
-                for (i = 0; i < noteArray.length; i++)
-                {
-                if (noteROW[i]==1)
-                {
-                System.out.println(noteON[i]);
-                }
-                }
-            //delay for a bit [tempo]
-             i=(i+1)%8;  //if i reaches 8 then goes back to 0, goes on forevearrrara
-             if(ON){
-                 try {
-                     Thread.sleep(1500);
-                 } catch (InterruptedException e) {
-                     // TODO Auto-generated catch block
-                     e.printStackTrace();
-                 }
-             }
-            }
-        }
-    }catch(Exception e){e.printStackTrace();}}
-    
-    public void clear() {
-        for (int r = 0; r < 8; r++) {
-            for (int c = 0; c < 8; c++) {
-                noteArray[r][c] = 0;
-            }
-        }
-    }
-
-    @Override
-    public void run() {
-        xyloTuner();
-    }
+//
+//    @Override
+//    public void serialEvent(SerialPortEvent serialPortEvent) {
+//        //To change body of implemented methods use File | Settings | File Templates.
+//    }
 
 
-    @Override
-    public void serialEvent(SerialPortEvent serialPortEvent) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
 
-
-    //================================================================================ ActionListeners
-    class StartListener implements ActionListener {
-        public void actionPerformed(ActionEvent a){
-            xyloTuner();
-        }
-    }
-    class StopListener implements ActionListener {
-        public void actionPerformed(ActionEvent a) {
-            ON = false;
-
-        }
-    }
-    class ResetListener implements ActionListener {
-        public void actionPerformed(ActionEvent a){
-           clear();
-        }
-    }
-
-    private class XylophoneTrigger extends Thread {
-        // The code represents the note name
-        private char code;
-
-        public XylophoneTrigger(char code) {
-            this.code = code;
-        }
-
-        @Override
-        public void run() {
-         //synchronized (lock)
-        }
-
-    }
 }
