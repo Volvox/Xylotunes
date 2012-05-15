@@ -1,14 +1,45 @@
+import gnu.io.SerialPort;
+import gnu.io.SerialPortEvent;
+import gnu.io.SerialPortEventListener;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
 
-public class Sequencer {
-    
+
+
+
+public class Sequencer extends JPanel implements SerialPortEventListener{
+    SerialPort serialPort;
+    private static final String PORT_NAMES[] = {
+            "/dev/tty.usbmodemfd121", // Mac OS X
+
+    };
+    /** Buffered input stream from the port */
+    private InputStream input;
+    /** The output stream to the port */
+    private OutputStream output;
+    /** Milliseconds to block while waiting for port open */
+    private static final int TIME_OUT = 2000;
+
+    /** Default bits per second for COM port. */
+    private static final int DATA_RATE = 9600;
+
+    public boolean getON(){
+       return this.ON;
+    }
+    public void setON(boolean onOrOff){
+        this.ON = onOrOff;
+    }
     JPanel mainPanel;
     ArrayList<JCheckBox> checkboxList; //cell storage
-
-    JFrame theFrame;
+    private Object lock = new Object();
+      private boolean ON = true;
+     JFrame theFrame;
     String[] notes = {    "c", "B", "A", "G", "F", "E", "D", "C"    };
 
 
@@ -17,7 +48,13 @@ public class Sequencer {
 
 
     public static void main(String args[]){
-        new Sequencer().buildGUI();
+        SwingUtilities.invokeLater(new Runnable() {  //Note 1
+            public void run() {
+                Sequencer seq = new Sequencer();
+                seq.buildGUI();
+                new Sequencer().setVisible(true);
+            }
+        });
     }
 
     //================================================================================ GUI
@@ -27,10 +64,10 @@ public class Sequencer {
         BorderLayout layout = new BorderLayout();
         JPanel background = new JPanel(layout);
         background.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-        
+
         checkboxList = new ArrayList<JCheckBox>();
         Box buttonBox = new Box(BoxLayout.Y_AXIS);
-        
+
         JButton start = new JButton("Start");
         start.addActionListener(new StartListener());
         buttonBox.add(start);
@@ -42,17 +79,17 @@ public class Sequencer {
         JButton reset = new JButton("Reset");
         stop.addActionListener(new ResetListener());
         buttonBox.add(reset);
-        
+
         Box labels = new Box(BoxLayout.X_AXIS);
         for (int i = 0; i < 8; i++)
         {
             labels.add(new Label(notes[i]));
         }
-      
-        
+
+
         background.add(BorderLayout.EAST, buttonBox);
         background.add(BorderLayout.SOUTH, labels);
-        
+
         theFrame.getContentPane().add(background);
 
         GridLayout grid = new GridLayout(8,8);
@@ -61,19 +98,20 @@ public class Sequencer {
 
         mainPanel = new JPanel(grid);
         background.add(BorderLayout.CENTER, mainPanel);
-        
+
         for (int i = 0; i < 64; i++){
             JCheckBox c = new JCheckBox();
             c.setSelected(false);
             checkboxList.add(c);
-            mainPanel.add(c);            
+            mainPanel.add(c);
         }
 
 
         theFrame.setBounds(50,50,300,300);
         theFrame.pack();
         theFrame.setVisible(true);
-        
+
+
     }
 
     //================================================================================ xyloTuner
@@ -87,7 +125,7 @@ public class Sequencer {
         int r, c;
 
         int i = 0;
-        boolean ON = true;
+//        boolean ON = true;
         int[] noteON = {0,1,2,3,4,5,6,7};
 
         //fill matrix with binary data from checkbox grid
@@ -108,10 +146,9 @@ public class Sequencer {
             System.out.println();
         }
 
-        int j=0;
-
-        while (i<noteArray.length){
-
+        int j;
+        try{
+        while (ON){
 
             //hit each note in the column
             for (j = 0; j < noteArray.length; j++) {
@@ -124,16 +161,19 @@ public class Sequencer {
                 }
                 }
             //delay for a bit [tempo]
-//             i=(i+1)%8;  //if i reaches 8 then goes back to 0, goes on forevearrrara
-
+             i=(i+1)%8;  //if i reaches 8 then goes back to 0, goes on forevearrrara
+             if(ON){
+                 try {
+                     Thread.sleep(1500);
+                 } catch (InterruptedException e) {
+                     // TODO Auto-generated catch block
+                     e.printStackTrace();
+                 }
+             }
             }
         }
-
-
-        //TODO: melody.Play() method    — need to figure out how to set .start() actionListener
-
-    }
-
+    }catch(Exception e){e.printStackTrace();}}
+    
     public void clear() {
         for (int r = 0; r < 8; r++) {
             for (int c = 0; c < 8; c++) {
@@ -141,6 +181,19 @@ public class Sequencer {
             }
         }
     }
+
+    @Override
+    public void run() {
+        xyloTuner();
+    }
+
+
+    @Override
+    public void serialEvent(SerialPortEvent serialPortEvent) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+
     //================================================================================ ActionListeners
     class StartListener implements ActionListener {
         public void actionPerformed(ActionEvent a){
@@ -149,13 +202,28 @@ public class Sequencer {
     }
     class StopListener implements ActionListener {
         public void actionPerformed(ActionEvent a) {
+            ON = false;
 
-            //TODO Stop() method
         }
     }
     class ResetListener implements ActionListener {
         public void actionPerformed(ActionEvent a){
            clear();
         }
+    }
+
+    private class XylophoneTrigger extends Thread {
+        // The code represents the note name
+        private char code;
+
+        public XylophoneTrigger(char code) {
+            this.code = code;
+        }
+
+        @Override
+        public void run() {
+         //synchronized (lock)
+        }
+
     }
 }
