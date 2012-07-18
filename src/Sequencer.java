@@ -1,177 +1,37 @@
-import gnu.io.SerialPort;
-
+import processing.core.PApplet;
+import processing.serial.Serial;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 
-
-
-
-public class Sequencer extends Thread implements Runnable{
-    SerialPort serialPort;
-    static
-    volatile boolean stopFlag = true;
-    private static final String PORT_NAMES[] = {
-            "/dev/tty.usbmodemfd121", // Mac OS X
-
-    };
-    /** Buffered input stream from the port */
-    private InputStream input;
-    /** The output stream to the port */
-    private OutputStream output;
-    /** Milliseconds to block while waiting for port open */
-    private static final int TIME_OUT = 2000;
-
-    /** Default bits per second for COM port. */
-    private static final int DATA_RATE = 9600;
-
-    public boolean getON(){
-       return this.ON;
-    }
-    public void setON(boolean onOrOff){
-        this.ON = onOrOff;
-    }
+public class Sequencer extends PApplet {
     JPanel mainPanel;
-    ArrayList<JCheckBox> checkboxList; //cell storage
-    private Object lock = new Object();
-      private boolean ON = true;
-     JFrame theFrame;
-    String[] notes = {    "c", "B", "A", "G", "F", "E", "D", "C"    };
-
-    int count = 0;
-
-
-
+    Serial port;
     int[][] noteArray = new int[8][8];
+    String[] notes = {    "c", "B", "A", "G", "F", "E", "D", "C"    };
+    Trigger xylophone = new Trigger();
 
+    static volatile boolean startFlag = false;
+    ArrayList<JCheckBox> checkboxList; //cell storage
+    private static final long serialVersionUID = 1L;
 
-
-
-    @Override
-    public void run() {
-        while (!stopFlag){
-             count++;
-            /*  8-element array to hold values for one note, across all 8 beats.
-if the note is supposed to play on that beat, the element value
-will be a 1. If that note is NOT supposed to play on that beat, a zero.*/
-            int[] noteROW;
-            int r, c;
-
-            int i = 0;
-            //        boolean ON = true;
-            int[] noteON = {0,1,2,3,4,5,6,7};
-
-            //fill matrix with binary data from checkbox grid
-            for (r = 0; r < noteON.length; r++)
-            {
-                for (c = 0; c < noteON.length; c++)
-                {
-                    JCheckBox jc = checkboxList.get(c + (noteON.length*r));
-
-                    //checkbox @ this beat selected
-                    if (jc.isSelected()){
-                        noteArray[r][c] = 1; //put binary value in this slot to trigger solenoid
-
-                    }
-                    else noteArray[r][c] = 0;
-                    System.out.print(noteArray[r][c]);//debug
-                }
-                System.out.println();
-            }
-
-            int j;
-            try{
-                while (!stopFlag){
-
-                    //hit each note in the column
-                    for (j = 0; j < noteArray.length; j++) {
-                        noteROW = noteArray[j];
-                        for (i = 0; i < noteArray.length; i++)
-                        {
-                            if (noteROW[i]==1)
-                            {
-                                System.out.println(noteON[i]);
-                            }
-                        }
-                        //delay for a bit [tempo]
-                        i=(i+1)%8;  //if i reaches 8 then goes back to 0, goes on forevearrrara
-                        if(ON){
-                            try {
-                                Thread.sleep(1500);
-                            } catch (InterruptedException e) {
-                                // TODO Auto-generated catch block
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }
-
-            }catch (Exception e){
-
-            }
-            }
-
-    }
-
-
-
-    //================================================================================ ActionListeners
-    class StartListener implements ActionListener {
-        public void actionPerformed(ActionEvent a){
-            run();
+    public void setup()
+    {
+        for (int i = 0; i < Serial.list().length; i++)
+        {
+            System.out.println("Device No."+ i + " : " +Serial.list()[i]);
         }
-    }
-    class StopListener implements ActionListener {
-        public void actionPerformed(ActionEvent a) {
-            stopFlag = false;
+        int device = 0;
+        port = new Serial(this, Serial.list()[device], 19200);
 
-        }
-    }
-    class ResetListener implements ActionListener {
-        public void actionPerformed(ActionEvent a){
-            //clear();
-        }
-    }
-
-    private class XylophoneTrigger extends Thread {
-        // The code represents the note name
-        private char code;
-
-        public XylophoneTrigger(char code) {
-            this.code = code;
-        }
-
-
-
-//        @Override
-//        public void run() {
-//            //synchronized (lock)
-//        }
-
+        GUI();
     }
 
 
-
-
-
-
-    public static void main(String args[]){
-        SwingUtilities.invokeLater(new Runnable() {  //Note 1
-            public void run() {
-                Sequencer seq = new Sequencer();
-                seq.buildGUI();
-
-            }
-        });
-    }
-
-    //================================================================================ GUI
-    public void buildGUI(){
-        theFrame = new JFrame("Cordialatron");
+    public void GUI(){
+        JFrame theFrame = new JFrame("Cordialatron");
         theFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         BorderLayout layout = new BorderLayout();
         JPanel background = new JPanel(layout);
@@ -198,7 +58,6 @@ will be a 1. If that note is NOT supposed to play on that beat, a zero.*/
             labels.add(new Label(notes[i]));
         }
 
-
         background.add(BorderLayout.EAST, buttonBox);
         background.add(BorderLayout.SOUTH, labels);
 
@@ -211,29 +70,96 @@ will be a 1. If that note is NOT supposed to play on that beat, a zero.*/
         mainPanel = new JPanel(grid);
         background.add(BorderLayout.CENTER, mainPanel);
 
-        for (int i = 0; i < 64; i++){
+        for (int i = 0; i < 64; i++)
+        {
             JCheckBox c = new JCheckBox();
             c.setSelected(false);
             checkboxList.add(c);
             mainPanel.add(c);
         }
 
-
         theFrame.setBounds(50,50,300,300);
         theFrame.pack();
         theFrame.setVisible(true);
 
+    }
+    public void draw() {}
 
+    //================================================================================ ActionListeners
+    class StartListener implements ActionListener {
+        public void actionPerformed(ActionEvent a){
+//            Sequencer2 main = new Sequencer2();
+            xylophone.run();
+        }
+    }
+    class StopListener implements ActionListener {
+        public void actionPerformed(ActionEvent a) {
+            startFlag = false;
+        }
+    }
+    class ResetListener implements ActionListener {
+        public void actionPerformed(ActionEvent a){
+            //clear();
+        }
     }
 
-    //================================================================================ xyloTuner
+    private class Trigger extends Thread{
 
-//
-//    @Override
-//    public void serialEvent(SerialPortEvent serialPortEvent) {
-//        //To change body of implemented methods use File | Settings | File Templates.
-//    }
+        int[] noteROW;
+        int r, c;
+        int i = 0;
+        int[] noteON = {0,1,2,3,4,5,6,7};
 
+        public void run() {
 
+            //fill matrix with binary data from checkbox grid
+            for (r = 0; r < noteON.length; r++)
+            {
+                for (c = 0; c < noteON.length; c++)
+                {
+                    JCheckBox jc = checkboxList.get(c + (noteON.length*r));
 
-}
+                    //checkbox @ this beat selected
+                    if (jc.isSelected())
+                    {
+                        noteArray[r][c] = 1; //put binary value in this slot to trigger solenoid
+                    }
+                    else
+                        noteArray[r][c] = 0;
+                    System.out.print(noteArray[r][c]);//debug
+                }
+                System.out.println();
+            }
+
+            int j=0;
+            byte[] serialSend = new byte[8];
+
+            //hit each note in the column
+            for (j = 0; j < noteArray.length; j++)
+            {
+                noteROW = noteArray[j];
+                for (i = 0; i < noteROW.length; i++)
+                {
+                    serialSend[i]=(byte)noteON[i]; //append column values
+
+                    if (noteROW[i]==1)
+                    {
+                        System.out.println(noteON[i]);
+                    }
+                }
+            }
+
+            port.write(serialSend);
+
+            try
+            {
+                Thread.sleep(1500);
+            }
+            catch (InterruptedException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
+}kkjjjj
