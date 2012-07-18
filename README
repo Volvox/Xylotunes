@@ -1,1 +1,51 @@
-This file was created by IntelliJ IDEA 11.0.1 for binding GitHub repository
+This is the code for the Xylotuner.pde file
+      
+
+      int c = 4;
+      int D = 10;
+      int E = 9;
+      int F = 8;
+      int G = 7;
+      int A = 6;
+      int B = 5;
+      int C = 11;
+      
+      int convert[] = {c, B, A, G, F, E, D, C};
+      int MAX = 8;
+      int index=0;
+      int TEMPO = 200;
+      void setup() {
+      
+        pinMode(C, OUTPUT); 
+        pinMode(D, OUTPUT); 
+        pinMode(E, OUTPUT); 
+        pinMode(F, OUTPUT); 
+        pinMode(G, OUTPUT); 
+        pinMode(A, OUTPUT); 
+        pinMode(B, OUTPUT); 
+        pinMode(c, OUTPUT); 
+      
+        Serial.begin(19200);
+        Serial.println("Ready");
+        }
+
+   void loop() {
+   if ( Serial.available() > 0 ){
+        
+        byte buffer[8];
+        int rowNum = 0;
+       
+           for (int row = 0; row < MAX; row++){
+                   while (index < MAX){
+                           buffer[index] = Serial.read(); //grab each row from JAVA, process one at a time
+                           index++;
+                     }
+                     for (int note = 0; note < MAX; note++)  {
+                             digitalWrite(note, HIGH); //trigger
+                             delay(25);   
+                             digitalWrite(note, LOW);  //could also use convert[note];
+                             delay(TEMPO); 
+                        } 
+                  }
+            }
+     }
