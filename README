@@ -36,9 +36,9 @@ This is the code for the Xylotuner.pde file
         int rowNum = 0;
        
            for (int row = 0; row < MAX; row++){
-                   while (index < MAX){
-                           buffer[index] = Serial.read(); //grab each row from JAVA, process one at a time
-                           index++;
+               while (index < MAX){
+                   buffer[index] = Serial.read(); //grab each row from JAVA, process one at a time
+                   index++;
                      }
                      for (int note = 0; note < MAX; note++)  {
                              digitalWrite(note, HIGH); //trigger
